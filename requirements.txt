@@ -1,0 +1,29 @@
+# -------------------------------
+# Core Dependencies
+# -------------------------------
+openpyxl==3.1.2          # Excel report generation
+pandas==2.2.2            # Data handling & export
+python-dateutil==2.9.0   # Extended datetime operations
+
+# -------------------------------
+# CLI Enhancements
+# -------------------------------
+rich==13.7.0             # Colored & formatted CLI output
+typer==0.12.3            # CLI command handling (optional but useful)
+
+# -------------------------------
+# Data & File Handling
+# -------------------------------
+jsonschema==4.22.0       # Data validation for JSON
+
+# -------------------------------
+# Testing & Development
+# -------------------------------
+pytest==8.2.2            # Unit testing framework
+pytest-cov==5.0.0        # Test coverage reports
+
+# -------------------------------
+# Optional Quality Tools
+# -------------------------------
+black==24.4.2            # Code formatting
+flake8==7.1.0            # Linting for code quality
