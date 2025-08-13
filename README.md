@@ -1,9 +1,3 @@
-Here’s a **professional `README.md`** for your `PyBank` repo based on the folder structure and project plan you provided.
-It’s detailed enough for collaborators, has a clean style, and contains all necessary sections.
-
----
-
-````markdown
 # 🏦 PyBank
 
 ## 📌 Overview
@@ -205,5 +199,3 @@ This project is licensed under the MIT License — see the [LICENSE](LICENSE) fi
 
 * **Author:** Karim Aboelazm
 * **GitHub:** [karim-aboelazm](https://github.com/karim-aboelazm)
-
-```
