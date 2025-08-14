@@ -6,9 +6,9 @@ Tasks are ordered from **easy → intermediate → advanced**, with **clear deli
 ---
 
 ## 📅 Timeline
-- **Week 1:** Environment setup, configuration, transaction logging.
-- **Week 2:** Core models for customers & accounts.
-- **Week 3:** Advanced account types, services, authentication.
+- **day 1:** Environment setup, configuration, transaction logging.
+- **day 2:** Core models for customers & accounts.
+- **day 3:** Advanced account types, services, authentication.
 
 ---
 
