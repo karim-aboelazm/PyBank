@@ -36,6 +36,30 @@ Tasks are ordered from **easy → intermediate → advanced**, with **clear deli
 
 ---
 
+### **I1 — Account Base Class**
+**Assigned To:** Karim ** (DONE)  
+**Goal:** Define a reusable abstract class for all account types.  
+**Details:**
+- Create `models/account.py`.
+- Abstract attributes:
+  - Account number (auto-generated)
+  - Balance
+  - Owner (Customer object)
+- Abstract methods:
+  - Deposit
+  - Withdraw
+- Implement:
+  - Basic deposit logic
+  - `__str__()` for account summary
+
+**Deliverables:**
+- `Account` abstract base class with `abc` module.
+
+**Deadline:** Week 2
+
+---
+
+
 ### **I2 — CheckingAccount Class**
 **Assigned To:** Ezzat  
 **Goal:** Implement a checking account type.  
@@ -78,33 +102,9 @@ Tasks are ordered from **easy → intermediate → advanced**, with **clear deli
 
 ---
 
-## 3️⃣ Advanced-Level Tasks (Senior Developer)
 
-### **D1 — Account Base Class**
-**Assigned To:** Karim  
-**Goal:** Define a reusable abstract class for all account types.  
-**Details:**
-- Create `models/account.py`.
-- Abstract attributes:
-  - Account number (auto-generated)
-  - Balance
-  - Owner (Customer object)
-- Abstract methods:
-  - Deposit
-  - Withdraw
-- Implement:
-  - Basic deposit logic
-  - `__str__()` for account summary
-
-**Deliverables:**
-- `Account` abstract base class with `abc` module.
-
-**Deadline:** Week 2
-
----
-
-### **D2 — LoanAccount Class**
-**Assigned To:** Karim  
+### **I4 — LoanAccount Class**
+**Assigned To:** Ezzat  
 **Goal:** Implement debt-based account type.  
 **Details:**
 - Create `models/loan_account.py`.
@@ -125,6 +125,9 @@ Tasks are ordered from **easy → intermediate → advanced**, with **clear deli
 **Deadline:** Week 3
 
 ---
+
+
+## 3️⃣ Advanced-Level Tasks (Senior Developer)
 
 ### **D3 — Bank Service Class**
 **Assigned To:** Karim  
