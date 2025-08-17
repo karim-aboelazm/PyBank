@@ -9,6 +9,7 @@ database connection details, logging settings, and other application-wide parame
 from pathlib import Path
 from datetime import datetime,timezone
 from zoneinfo import ZoneInfo
+import re
 
 # `BASE_DIR = Path(__file__).resolve().parent` is setting the `BASE_DIR` variable to the parent
 # directory of the current script file. Here's a breakdown of what each part of this line does:
@@ -136,3 +137,16 @@ CHECKING_OVERDRAFT_LIMIT = 500.0
 # datetime.now(timezone.utc).astimezone(ZoneInfo(DEFAULT_TIME_ZONE)).strftime(DATETIME_FORMAT)` is
 # performing the following actions:
 NOW = datetime.now(timezone.utc).astimezone(ZoneInfo(DEFAULT_TIME_ZONE)).strftime(DATETIME_FORMAT)
+
+
+def validation_email(email: str):
+    if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
+        print("Invalid email format.")
+        return False
+    return email
+
+def validation_phone(phone: str):
+    if not re.match(r"^(010|011|012|015)\d{8}$", phone):
+        print("Invalid email format.")
+        return False
+    return phone
