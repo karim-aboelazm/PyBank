@@ -107,6 +107,27 @@ class AuthSystem:
         print("User not found.")
         return False
 
+    def change_password(self, old_password: str, new_password: str) -> bool:
+        if not self.is_authenticated():
+            print("No user is currently logged in.")
+            return False
+        
+        if self._hash_password(old_password) != self.current_user['password']:
+            print("Old password is incorrect.")
+            return False
+        
+        self.current_user['password'] = self._hash_password(new_password)
+        all_users = self._load_all_users()
+        
+        for i, user in enumerate(all_users):
+            if user['username'] == self.current_user['username']:
+                all_users[i] = self.current_user
+                break
+        
+        self._save_all_users(all_users)
+        print("Password changed successfully.")
+        return True
+
     def logout(self) -> None:
         if self.current_user:
             print(f"Goodbye {self.current_user['name']}!")
