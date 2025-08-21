@@ -1,0 +1,121 @@
+import json
+import hashlib
+import config
+
+# Users Data File Store
+USER_DATA_FILE = config.DATA_DIR / 'users.json'
+
+class AuthSystem:
+    def __init__(self):
+        self.current_user = None
+        # Ensure the data directory exists
+        USER_DATA_FILE.parent.mkdir(parents=True, exist_ok=True)
+        
+        if not USER_DATA_FILE.exists() or USER_DATA_FILE.stat().st_size == 0:
+            with open(USER_DATA_FILE, 'w', encoding="utf-8") as file:
+                json.dump([], file)
+    
+    def _load_all_users(self) -> list[dict]:
+        try:
+            with open(USER_DATA_FILE, 'r', encoding="utf-8") as file:
+                return json.load(file)
+        except json.JSONDecodeError:
+            with open(USER_DATA_FILE, 'w', encoding="utf-8") as file:
+                json.dump([], file)
+            return []
+    
+    def _save_all_users(self, users: list[dict]) -> None:
+        with open(USER_DATA_FILE, 'w', encoding="utf-8") as file:
+            json.dump(users, file, indent=4)
+    
+    def _hash_password(self, password: str) -> str:
+        return hashlib.sha256(password.encode('utf-8')).hexdigest()
+    
+    def register_user(self,name:str, username: str, email:str, password: str) -> bool:
+        all_users = self._load_all_users()
+        if any(user['email'] == email for user in all_users):
+            print("User with `Email` already registered.")
+            return False
+        
+        if any(user['username'] == username for user in all_users):
+            print("User with `Username` already registered.")
+            return False
+        
+        all_users.append({
+            'name': name,
+            'username': username,
+            'email': email,
+            'password': self._hash_password(password)
+        })
+
+        self._save_all_users(all_users)
+        print("User registered successfully.")
+        return True
+
+    def login(self, identifier: str, password: str) -> bool:
+        all_users = self._load_all_users()
+        hashed_password = self._hash_password(password)
+        is_email = config.validation_email(identifier)
+        
+        for user in all_users:
+            if is_email:
+                if user['email'] == identifier and user['password'] == hashed_password:
+                    self.current_user = user
+                    print(f"Welcome {user['name']}!")
+                    return True
+            else:
+                if user['username'] == identifier and user['password'] == hashed_password:
+                    self.current_user = user
+                    print(f"Welcome {user['name']}!")
+                    return True
+        print("Invalid email or password.")
+        return False
+    
+    def reset_password(self, identifier: str, new_password: str) -> bool:
+        all_users = self._load_all_users()
+        is_email = config.validation_email(identifier)
+        for user in all_users:
+            if is_email:
+                if user['email'] == identifier:
+                    user['password'] = self._hash_password(new_password)
+                    self._save_all_users(all_users)
+                    print("Password reset successfully.")
+                    return True
+            else:
+                if user['username'] == identifier:
+                    user['password'] = self._hash_password(new_password)
+                    self._save_all_users(all_users)
+                    print("Password reset successfully.")
+                    return True
+        print("User not found.")
+        return False
+
+    def forget_password(self, identifier: str) -> bool:
+        all_users = self._load_all_users()
+        is_email = config.validation_email(identifier)
+        for user in all_users:
+            if is_email:
+                if user['email'] == identifier:
+                    print("Password reset link sent to your email. please make reset password.")
+                    print(f"please enter your email [{user['email']}] and your new password.")
+                    return True
+            else:
+                if user['username'] == identifier:
+                    print("Password reset link sent to your username. please make reset password.")
+                    print(f"please enter your username [{user['username']}] and your new password.")
+                    return True
+        print("User not found.")
+        return False
+
+    def logout(self) -> None:
+        if self.current_user:
+            print(f"Goodbye {self.current_user['name']}!")
+            self.current_user = None
+        else:
+            print("No user is currently logged in.")
+
+    def get_current_user(self) -> dict | None:
+        return self.current_user
+    
+    def is_authenticated(self) -> bool:
+        return self.current_user is not None
