@@ -1,95 +1,141 @@
 import datetime
 import json
-from functools import wraps
 from config import DATA_DIR,NOW
-from services.auth_system import AuthSystem  # so we can get the current user
+from .auth_system import AuthSystem
+from .bank_service import BankService
+from models import SequenceGenerator
+
+transation_deposit_id =  SequenceGenerator(prefix="TXN_DEPO_")
+transation_withdraw_id = SequenceGenerator(prefix="TXN_WITH_")
+transation_transfer_id = SequenceGenerator(prefix="TXN_TRAN_")
 
 TRANSACTIONS_FILE = DATA_DIR / "transactions.json"
 
-
-def log_user_action(func):
-    @wraps(func)
-    def wrapper(self, *args, **kwargs):
-        auth = AuthSystem()  # singleton-like, holds current_user
-        user = auth.current_user if auth.is_authenticated() else "anonymous"
-        kwargs["user"] = user
-        return func(self, *args, **kwargs)
-    return wrapper
-
-
-class TransactionService:
+class Transaction:
     def __init__(self):
         TRANSACTIONS_FILE.parent.mkdir(parents=True, exist_ok=True)
-        if not TRANSACTIONS_FILE.exists():
-            with open(TRANSACTIONS_FILE, "w") as f:
+        if not TRANSACTIONS_FILE.exists() or TRANSACTIONS_FILE.stat().st_size == 0:
+            with open(TRANSACTIONS_FILE, "w", encoding="utf-8") as f:
                 json.dump([], f)
-
-    def _save_transaction(self, record):
-        with open(TRANSACTIONS_FILE, "r+") as f:
-            data = json.load(f)
-            data.append(record)
-            f.seek(0)
-            json.dump(data, f, indent=4)
-
-    @log_user_action
-    def deposit(self, account, amount, user=None):
-        if amount <= 0:
-            print("❌ Deposit amount must be positive.")
-            return False
-
-        account.deposit(amount)
-
-        self._save_transaction({
-            "type": "deposit",
-            "account_id": account.get_account_number(),
-            "amount": amount,
-            "user": user,
-            "timestamp":NOW
-        })
-
-        print(f"✅ Deposited {amount:.2f} to account {account.get_account_number()} by {user}.")
-        return True
-
-    @log_user_action
-    def withdraw(self, account, amount, user=None):
-        if account.withdraw(amount):
-            self._save_transaction({
-                "type": "withdraw",
-                "account_id": account.get_account_number(),
-                "amount": amount,
-                "user": user,
-                "timestamp": NOW
-            })
-            print(f"✅ Withdrawn {amount:.2f} from account {account.get_account_number()} by {user}.")
-            return True
-        return False
-
-    @log_user_action
-    def transfer(self, from_acc, to_acc, amount, user=None):
-        if from_acc.withdraw(amount):
-            to_acc.deposit(amount)
-            self._save_transaction({
-                "type": "transfer",
-                "from": from_acc.get_account_number(),
-                "to": to_acc.get_account_number(),
-                "amount": amount,
-                "user": user,
-                "timestamp": NOW
-            })
-            print(f"✅ Transferred {amount:.2f} from {from_acc.get_account_number()} to {to_acc.get_account_number()} by {user}.")
-            return True
-        return False
     
-    def get_transactions_for_user(self, username: str) -> list[dict]:
-        """Return all transactions made by the specified user."""
-        if not TRANSACTIONS_FILE.exists():
-            return []
+    def _save_transaction(self, transaction_data):
+        with open(TRANSACTIONS_FILE, "r+", encoding="utf-8") as f:
+            transactions = json.load(f)
+            transactions.append(transaction_data)
+            f.seek(0)
+            json.dump(transactions, f, indent=4)
 
+    def _prepare_transaction_data(self, account, transaction_type, amount,user,account2=None):
+        transaction_id = ""
+        if transaction_type == "deposit":
+            transaction_id = transation_deposit_id.next_id()
+        elif transaction_type == "withdraw":
+            transaction_id = transation_withdraw_id.next_id()
+        elif transaction_type == "transfer":
+            transaction_id = transation_transfer_id.next_id()
+        else:
+            print("Invalid transaction type.")
+            return None
+        if account2:
+            data =  {
+                "transaction_id": transaction_id,
+                "from_account_number": account.get_account_number(),
+                "transaction_type": transaction_type,
+                "amount": amount,
+                "to_account_number": account2.get_account_number(),
+                "user": user,
+                "timestamp": NOW,
+            }
+        else:
+            data =  {
+                "transaction_id": transaction_id,
+                "account_number": account.get_account_number(),
+                "transaction_type": transaction_type,
+                "amount": amount,
+                "user": user,
+                "timestamp": NOW,
+            }
+        return data
+    
+    def deposit(self, account, amount,user):
+        account.deposit(amount)
+        transaction_data = self._prepare_transaction_data(account, "deposit", amount,user)
+        self._save_transaction(transaction_data)
+        return True
+    
+    def withdraw(self, account, amount,user):
+        account.withdraw(amount)
+        transaction_data = self._prepare_transaction_data(account, "withdraw", amount,user)
+        self._save_transaction(transaction_data)
+        return True
+    
+    def transfer(self, from_account, to_account, amount,user):
+        if from_account.withdraw(amount):
+            to_account.deposit(amount)
+            transaction_data = self._prepare_transaction_data(from_account, "transfer", amount,user,to_account)
+            self._save_transaction(transaction_data)
+            return True
+        return False
+
+    def get_transactions(self, account_number=None):
         with open(TRANSACTIONS_FILE, "r", encoding="utf-8") as f:
-            try:
-                data = json.load(f)
-            except json.JSONDecodeError:
-                return []
+            transactions = json.load(f)
+        
+        if account_number:
+            transactions = [t for t in transactions if t.get("account_number") == account_number or t.get("from_account_number") == account_number or t.get("to_account_number") == account_number]
+        
+        return transactions
+    
+    def get_transactions_by_date(self, start_date, end_date, account_number=None):
+        with open(TRANSACTIONS_FILE, "r", encoding="utf-8") as f:
+            transactions = json.load(f)
+        
+        start_dt = datetime.datetime.fromisoformat(start_date)
+        end_dt = datetime.datetime.fromisoformat(end_date)
+        
+        filtered_transactions = []
+        for t in transactions:
+            t_dt = datetime.datetime.fromisoformat(t["timestamp"])
+            if start_dt <= t_dt <= end_dt:
+                if account_number:
+                    if t.get("account_number") == account_number or t.get("from_account_number") == account_number or t.get("to_account_number") == account_number:
+                        filtered_transactions.append(t)
+                else:
+                    filtered_transactions.append(t)
+        
+        return filtered_transactions
+    
+    def get_transactions_by_type(self, transaction_type, account_number=None):
+        with open(TRANSACTIONS_FILE, "r", encoding="utf-8") as f:
+            transactions = json.load(f)
+        
+        filtered_transactions = [t for t in transactions if t["transaction_type"] == transaction_type]
+        
+        if account_number:
+            filtered_transactions = [t for t in filtered_transactions if t.get("account_number") == account_number or t.get("from_account_number") == account_number or t.get("to_account_number") == account_number]
+        
+        return filtered_transactions
+    
+    def get_transactions_by_user(self, user_email, account_number=None):
+        with open(TRANSACTIONS_FILE, "r", encoding="utf-8") as f:
+            transactions = json.load(f)
+        
+        filtered_transactions = [t for t in transactions if t["user"] == user_email]
+        
+        if account_number:
+            filtered_transactions = [t for t in filtered_transactions if t.get("account_number") == account_number or t.get("from_account_number") == account_number or t.get("to_account_number") == account_number]
+        
+        return filtered_transactions
+    
+    def get_transactions_by_customer_id(self, customer_id, account_number=None):
+        with open(TRANSACTIONS_FILE, "r", encoding="utf-8") as f:
+            transactions = json.load(f)
 
-        # Filter transactions by the user
-        return [tx for tx in data if tx.get("user") == username]
+        bank_service = BankService()
+        accounts = bank_service.get_customer_accounts(customer_id)
+        account_numbers = {acc.get_account_number() for acc in accounts}
+        filtered_transactions = [t for t in transactions if t.get("account_number") in account_numbers or t.get("from_account_number") in account_numbers or t.get("to_account_number") in account_numbers]
+        if account_number:
+            filtered_transactions = [t for t in filtered_transactions if t.get("account_number") == account_number or t.get("from_account_number") == account_number or t.get("to_account_number") == account_number]
+        return filtered_transactions
+    

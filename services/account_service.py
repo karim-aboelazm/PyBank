@@ -29,6 +29,11 @@ class AccountService:
         with open(ACCOUNT_DATA_FILE, 'w', encoding="utf-8") as file:
             json.dump([account.to_dict() for account in accounts], file, indent=4)
     
+    def add_account(self, account: Account) -> None:
+        accounts = self._load_all_accounts()
+        accounts.append(account)
+        self._save_all_accounts(accounts)
+    
     def get_account(self, account_number: str) -> Account | None:
         accounts = self._load_all_accounts()
         for account in accounts:
@@ -47,8 +52,12 @@ class AccountService:
             return Account.from_dict(account.to_dict())
         
     def get_all_accounts(self) -> list[Account]:
-        return [self._reconstruct_account(acc) for acc in self._load_all_accounts()]
+        return [acc for acc in self._load_all_accounts()]
     
+    def get_all_customers_accounts(self,customer_id:str) -> list[Account]:
+        accounts = self._load_all_accounts()
+        return [acc for acc in accounts if acc.get_customer_id() == customer_id]
+
     def get_customer_accounts(self, customer_id: str = None) -> list[Account]:
         accounts = self._load_all_accounts()
         if customer_id:
@@ -59,13 +68,18 @@ class AccountService:
         accounts = self._load_all_accounts()
         update = False
         for i, acc in enumerate(accounts):
-            if acc.get_account_number() == account.get_account_number():
+            if acc["customer_id"] == account.get_account_number():
                 accounts[i] = account
                 update = True
                 break
         
         if not update:
-            print(f"Account {account.get_account_number()} not found for update.")
+            print(f"Account not found for update.")
 
         self._save_all_accounts(accounts)
     
+    def delete_account(self, account_number: str) -> bool:
+        accounts = self._load_all_accounts()
+        accounts = [acc for acc in accounts if acc.get_account_number() != account_number]
+        self._save_all_accounts(accounts)
+        return True
