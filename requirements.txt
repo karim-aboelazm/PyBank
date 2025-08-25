@@ -27,3 +27,4 @@ pytest-cov       # Test coverage reports
 # -------------------------------
 black            # Code formatting
 flake8           # Linting for code quality
+tabulate         # Pretty-print tabular data (optional)

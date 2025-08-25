@@ -343,8 +343,25 @@ def transaction_menu():
         account_number = input("Enter account number to view transactions: ")
         transactions = transaction_service.get_transactions(account_number)
         if transactions:
-            for txn in transactions:
-                print(txn)
+            for i,txn in enumerate(transactions, start=1):
+                if 'transaction_type' in txn and txn['transaction_type'] == 'transfer':
+                    data = [
+                        ["Transaction ID", txn['transaction_id']],
+                        ["From Account", txn['from_account_number']],
+                        ["To Account", txn['to_account_number']],
+                        ["Type", txn['transaction_type']],
+                        ["Amount", f"${txn['amount']:,.2f}"],
+                        ["Date", txn['timestamp']],
+                    ]
+                else:
+                    data = [
+                        ["Transaction ID", txn['transaction_id']],
+                        ["Account ID", txn['account_number']],
+                        ["Type", txn['transaction_type']],
+                        ["Amount", f"${txn['amount']:,.2f}"],
+                        ["Date", txn['timestamp']],
+                    ]
+                print(config.render_table(f"Transaction [{i:02d}] Details", data))
         else:
             print(f"No transactions found for account {account_number}.")
 

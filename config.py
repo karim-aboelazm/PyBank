@@ -152,6 +152,7 @@ def validation_phone(phone: str):
         return False
     return phone
 
+
 def render_table(title: str, data: list) -> str:
     table = tabulate(data, tablefmt="grid")
     width = len(table.split("\n")[0]) - 2  
