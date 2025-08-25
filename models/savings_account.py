@@ -7,12 +7,13 @@ class SavingsAccount(Account):
                  customer_name: str, 
                  customer_id: str, 
                  balance: float = config.DEFAULT_INITIAL_BALANCE,
-                 interest_rate: float = config.SAVING_INTEREST_RATE):
+                 interest_rate: float = config.SAVING_INTEREST_RATE,
+                 account_type: str = "Savings Account"):
         super().__init__(account_number, customer_name, customer_id, balance)
         self._interest_rate = interest_rate
         self._withdrawals_this_month = 0
         self._withdrawal_limit = config.SAVING_WITHDRAWAL_LIMIT
-        self._account_type = "Savings Account"
+        self._account_type = account_type
     
     def withdraw(self, amount):
         if self._withdrawals_this_month >= self._withdrawal_limit:
@@ -60,6 +61,9 @@ class SavingsAccount(Account):
         self._withdrawals_this_month = 0
         print(f"Withdrawals this month reset for account {self.get_account_number()}.")
     
+    def get_account_type(self) -> str:
+        return self._account_type
+
     def to_dict(self):
         data = super(SavingsAccount, self).to_dict()
         data['interest_rate'] = self._interest_rate
@@ -76,4 +80,5 @@ class SavingsAccount(Account):
         account._withdrawal_limit = data.get('withdrawal_limit', config.SAVING_WITHDRAWAL_LIMIT)
         account._account_type = data.get('account_type', "Savings Account")
         return account
+
     

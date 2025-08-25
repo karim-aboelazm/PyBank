@@ -1,0 +1,13 @@
+Customer --> Name, Email, ID
+----------------------------------------------
+Account -> Name, Email, ID, Deposit , Withdraw , check_balance
+    -> CheckingAccount(Account)
+    -> SavingAccount(Account) Withdraw , tax
+    -> LoanAccount(Account) Deposit , tax
+---------------------------------------------
+Authentication System
+    - User -> username , Password 
+    * register
+    * login 
+    * logout
+---------------------------------------------

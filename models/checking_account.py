@@ -8,10 +8,11 @@ class CheckingAccount(Account):
                  customer_name: str, 
                  customer_id: str, 
                  balance: float = config.DEFAULT_INITIAL_BALANCE,
-                 overdraft_limit: float = config.CHECKING_OVERDRAFT_LIMIT):
+                 overdraft_limit: float = config.CHECKING_OVERDRAFT_LIMIT,
+                 account_type: str = "Checking Account"):
         super().__init__(account_number, customer_name, customer_id, balance)
         self._overdraft_limit = overdraft_limit
-        self._account_type = "Checking Account"
+        self._account_type = account_type
 
     def withdraw(self, amount: float) -> bool:
         if amount > (self._balance + self._overdraft_limit):
@@ -48,6 +49,9 @@ class CheckingAccount(Account):
         self._overdraft_limit = new_limit
         print(f"Overdraft limit set to {self._overdraft_limit} for account {self.get_account_number()}.")
     
+    def get_account_type(self) -> str:
+        return self._account_type
+
     def to_dict(self):
         data = super(CheckingAccount,self).to_dict()
         data['overdraft_limit'] = self._overdraft_limit

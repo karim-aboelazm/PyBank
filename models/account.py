@@ -1,5 +1,5 @@
 import config
-
+from tabulate import tabulate
 class Account:
     '''
         Account model for PyBank application.
@@ -7,7 +7,7 @@ class Account:
         This module defines the Account class, which represents a bank account
         and includes methods for account operations.
     '''
-    def __init__(self,account_number:str,customer_name:str,customer_id:str,balance:float=0.0):
+    def __init__(self,account_number:str,customer_name:str,customer_id:str,balance:float=0.0,account_type:str=None):
         """
             This Python function initializes an object with account number, customer name, balance, and
             creation timestamp.
@@ -30,6 +30,7 @@ class Account:
         self.__customer_name = customer_name
         self._balance = balance
         self._created_at = config.NOW
+        self._account_type = account_type if account_type else "General Account"
     
     def get_account_number(self) -> str:
         """
@@ -112,18 +113,22 @@ class Account:
 
     def to_dict(self):
         return {
-            "account_number": self.__account_number,
+            "account_id": self.__account_number,
+            "account_type": self._account_type,
             "customer_id": self.__customer_id,
             "customer_name": self.__customer_name,
             "balance": self._balance,
             "created_at": str(self._created_at),
-            "type": self.__class__.__name__ 
         }
+    
+    def get_account_type(self) -> str:
+        return self._account_type if self._account_type else "General Account"
 
     @classmethod
     def from_dict(cls, data: dict):
         return cls(
-            account_number=data["account_number"],
+            account_number=data["account_id"],
+            account_type=data["account_type"],
             customer_id=data["customer_id"],
             customer_name=data["customer_name"],
             balance=data["balance"]
@@ -137,12 +142,12 @@ class Account:
         :return: The method `__str__` is returning a formatted string that represents the account
         information, including the account number, customer name, balance, and creation date.
         """
-        return (
-        f"Account\n"
-        f"---------------------------\n"
-        f" Account No.   : {self.get_account_number()}\n"
-        f" Customer ID     : {self.get_customer_id()}\n"
-        f" Customer Name     : {self.get_customer_name()}\n"
-        f" Balance       : ${self.get_balance():,.2f}\n"
-        f" Opened On     : {self.get_created_at()}\n"
-    )
+        data = [
+            ["Account No.",   self.get_account_number()],
+            ["Account Type.",   self.get_account_type()],
+            ["Customer ID",   self.get_customer_id()],
+            ["Customer Name", self.get_customer_name()],
+            ["Balance",       f"${self.get_balance():,.2f}"],
+            ["Opened On",     self.get_created_at()],
+        ]
+        return config.render_table(title="Account Information",data=data)

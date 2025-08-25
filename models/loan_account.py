@@ -10,13 +10,14 @@ class LoanAccount(Account):
                  balance: float = config.DEFAULT_INITIAL_BALANCE, 
                  loan_amount: float = 0.0,
                  interest_rate: float = config.LOAN_INTEREST_RATE,
-                 term_months: int = 12):
+                 term_months: int = 12,
+                 account_type: str = "Loan Account"):
         super().__init__(account_number, customer_name, customer_id, balance)
         self._loan_amount = loan_amount
         self._interest_rate = interest_rate
         self._term_months = term_months
         self._monthly_installments = self.calculate_monthly_installment()
-        self._account_type = "Loan Account"
+        self._account_type = account_type
 
     def calculate_monthly_installment(self) -> float:
         if self._term_months <= 0:
@@ -73,6 +74,9 @@ class LoanAccount(Account):
     def get_monthly_installment(self) -> float:
         return self._monthly_installments
     
+    def get_account_type(self) -> str:
+        return self._account_type
+
     def to_dict(self):
         data = super(LoanAccount, self).to_dict()
         data['loan_amount'] = self._loan_amount
@@ -92,4 +96,3 @@ class LoanAccount(Account):
         account._account_type = data.get('account_type', "Loan Account")
         return account
 
-    

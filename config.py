@@ -9,6 +9,7 @@ database connection details, logging settings, and other application-wide parame
 from pathlib import Path
 from datetime import datetime,timezone
 from zoneinfo import ZoneInfo
+from tabulate import tabulate
 import re
 
 # `BASE_DIR = Path(__file__).resolve().parent` is setting the `BASE_DIR` variable to the parent
@@ -150,3 +151,10 @@ def validation_phone(phone: str):
         print("Invalid email format.")
         return False
     return phone
+
+def render_table(title: str, data: list) -> str:
+    table = tabulate(data, tablefmt="grid")
+    width = len(table.split("\n")[0]) - 2  
+    title_row = "+" + "-" * width + "+"
+    title_line = f"| {title.center(width - 2)} |"
+    return f"{title_row}\n{title_line}\n{title_row}\n{table}"
